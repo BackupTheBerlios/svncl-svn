@@ -1,0 +1,148 @@
+=====svncl.pl=====
+
+===generate a GNU compilant ChangeLog file from the svn log messages===
+
+Usage: svn log -v --xml | snvcl.pl > ChangeLog
+
+There are already some other scripts doing the very same job. So why just
+writing another script for this?
+
+Because I like the simple things. And because I wanted the data to be
+slightly more preprocessed then the existing tools do to get a more
+comprehensive changelog. 
+
+All consecutive log entries from the same author on the same day are unified
+to only one ChangeLog entry. The other tools I know of simply produce a
+longish sequence of one line entries. That's ok, if you commit only one time
+a day, but very talkative if you prefer to do 20 small commits per day.
+
+The other point are the author names. svn only lists the login names of the
+committing project members, but a fully-fledged changelog should list the
+full names and email adresses. svncl.pl automatically replaces all known
+names by using a internal list (simple things, you remember?)
+
+
+
+====Installation====
+
+Actually, there is no installation. Just unpack and copy svncl.pl somewhere
+in your path. Later you can add a list of known full names to make you
+ChangeLogs more complete (see configuation below)
+
+No bulky dependencies, only a working perl enviroment with the LWP and
+HTML::Browser packages are needed. They are already present in almost every
+perl distribution.
+
+
+====Usage====
+
+Just give a verbose svn logfile in xml as input on stdin or as a file name
+argument and you will get a nicely sorted ChangeLog:
+
+<terminal>
+$> svn log -v --xml | snvcl.pl > ChangeLog
+</terminal>
+
+Or if prefer to separate the two steps:
+
+<terminal>
+$> svn log -v --xml > log.xml
+$> snvcl.pl log.xml > ChangeLog
+</terminal>
+
+
+Due to the log entry unification and the name replacement a version history
+like this:
+
+<code>
+------------------------------------------------------------------------
+r1922 | tenbaht | 2010-06-18 15:18:15 +0700 (Fri, 18 Jun 2010) | 1 line
+Changed paths:
+   D /trunk/gcstar/lib/gcstar/GCPlugins/GCfilms/GCDVDSpot.pm
+
+[GCDVDSpot.pm] removed the plugin as dvdspot.com was shut down Okt. 2008
+------------------------------------------------------------------------
+r1921 | tenbaht | 2010-06-18 14:56:15 +0700 (Fri, 18 Jun 2010) | 1 line
+Changed paths:
+   M /trunk/gcstar/lib/gcstar/GCPlugins/GCfilms/GCMediadis.pm
+
+[GCMediadis.pm] added rating, added director+actor to search window, fixed actors name mangling and more minor changes 
+------------------------------------------------------------------------
+r1920 | tenbaht | 2010-06-18 11:21:25 +0700 (Fri, 18 Jun 2010) | 1 line
+Changed paths:
+   M /trunk/gcstar/lib/gcstar/GCPlugins/GCfilms/GCFilmAffinityEN.pm
+   M /trunk/gcstar/lib/gcstar/GCPlugins/GCfilms/GCFilmAffinityES.pm
+
+[GCFilmAffinityEN] add rating, sync both GCFilmAffinityE* files
+------------------------------------------------------------------------
+r1919 | tenbaht | 2010-06-18 11:08:13 +0700 (Fri, 18 Jun 2010) | 1 line
+Changed paths:
+   M /trunk/gcstar/lib/gcstar/GCPlugins/GCfilms/GCAnimeNfoA.pm
+
+[GCAnimeNfoA.pm] added rating
+------------------------------------------------------------------------
+</code>
+
+results in a ChangeLog entry like this:
+
+<code>
+2010-06-18  Michael Mayer (tenbaht)  <michael-mayer@gmx.de>
+
+    * GCDVDSpot.pm: removed the plugin as dvdspot.com was shut down Okt. 2008
+
+    * GCMediadis.pm: added rating, added director+actor to search window, fixed
+      actors name mangling and more minor changes
+
+    * GCFilmAffinityEN.pm, GCFilmAffinityES.pm: add rating, sync both
+      GCFilmAffinityE* files
+
+    * GCAnimeNfoA.pm: added rating
+</code>
+
+
+
+====Configuration====
+
+If you like to use the adress translation you have to enter the full names
+and email adresses first. Currently this translation table is hardwired in
+the sources. Maybe a litte bit too simple, I know. But it works. Reliable.
+
+Just edit svncl.pl in function 'start' at line 156 and add all the names you
+want to be replaced. Using a config file would be easy as well, but I am
+lazy. It is a simple task, so I like to use a simple tool for it.
+
+
+
+====other tools that do the same job====
+
+I am sure this list is not complete, but I know at least of these two:
+
+===svn2cl: Subversion ChangeLog generator===
+by Arthur De Jong, http://arthurdejong.org/svn2cl/
+It a xsl stylesheet with a bash script wrapper. Easy to use but it did't
+unify multiple commits on the same day.
+
+===svn2log===
+http://freshmeat.net/projects/svn2log/
+Written in python. I couldn't get it running even after installing all
+python libs.
+
+
+====Format of the resulting ChangeLog====
+
+In the conversion process text enclosed in '[]' at the beginning of a log
+messages is discarded, as this is supposed to be the filename which will be
+included anyway. If the contributers full name or email adress is known to
+the programm it is included in the log entry as well.
+
+The resulting file is not exactly in GNU format, but very close. The two
+differences are:
+
+  - If the full name is known, the login name is added in parenthes, separated
+    from the full name by one space.
+  - for multi line messages the following lines are indended by 6 spaces, not
+    4 like the gnu format.
+
+Both deviations should not break anything if you use other tools or editors
+for further log file processing as name and email adress are still seperated
+by two spaces, the full name and login by only one.

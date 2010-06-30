@@ -1,0 +1,20 @@
+v0.3.3
+    * first public release on svncl.berlios.de
+    * minor code cleanup
+
+v0.3.2
+    * add html entitdy decoding
+    * do the sorting in a less obfuscated way, use a hash for the file names
+
+v0.3.1
+    * sort the list of filenames for every message, remove duplicates.
+
+v0.3
+    * added name- and email adress table lookup to make the header lines
+      more complete.
+
+v0.2
+    * useable. Uses only the information from the log, no name table lookup.
+
+v0.1
+    * first version
