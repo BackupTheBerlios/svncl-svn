@@ -48,6 +48,52 @@ package HTMLStrip;
 use base "HTML::Parser";
 use HTML::Entities;
 
+
+# format of the configfile ~/.subversion/svncl
+#
+# realname <svnname>=<Real Name  <mail@adress>>
+#   by GNU conventions only one space between the name parts
+#   exactly two spaces between the name and the email adress.
+#   login names are converted to lower case first for the hash key.
+# ignore <filename>
+#   ignores log entries for the given file name (case insensitive). Useful
+#   for generated files. Don't flood your changelog with entries about the
+#   changes in the changelog.
+sub read_config
+{
+    my ($self) = @_;
+    my $key;
+    my $value;
+    my $svnname;
+    my $fullname;
+
+    foreach my $configfile ("/etc/svncl", glob("~/.subversion/svncl"), glob("~/.svncl"))
+    {
+        next if (! -r $configfile);
+        open(my $fh, "<", $configfile);
+        while (<$fh>)
+        {
+            s/^\s*//;		# remove blanks at line start
+            s/\s*$//;		# remove trailing blanks
+            next if (/^$/);	# ignore empty lines.
+            next if (/^#/);	# ignore comment lines.
+            ($key, $value) = split(/\s+/,$_,2);
+            $key = lc($key);	# convert to lowercase
+            if ($key eq "realname")
+            {
+                ($svnname, $fullname) = split(/\s*=\s*/, $value, 2);
+                $self->{fullname}->{lc($svnname)} = $fullname;
+            }
+            elsif ($key eq "ignore")
+            {
+                $self->{ignore}->{lc($value)} = 1;
+            }
+        }
+        close($fh);
+    }
+}
+
+
 ##
 # indent ($text, $width, $prefix, $indent)
 #
@@ -66,25 +112,25 @@ sub indent
     my ($text, $width, $prefix, $indent) = @_;
     my @out;
 
-    my $line = $prefix;
+    my $line     = $prefix;
     my $cntwords = 0;
     foreach my $word (split(/\s+/, $text))
     {
-        if ((length($line)+length($word)) < $width)
+        if ((length($line) + length($word)) < $width)
         {
             # add one more word to the line, insert one space between words.
-            $line .= ($cntwords?" ":"").$word;
+            $line .= ($cntwords ? " " : "") . $word;
             $cntwords++;
         }
         else
         {
             # line already filled up. Start a new one.
-            push (@out, $line);
-            $line = $indent . $word;
+            push(@out, $line);
+            $line     = $indent . $word;
             $cntwords = 1;
         }
     }
-    push (@out, $line) if ($cntwords);	# don't forget the very last line
+    push(@out, $line) if ($cntwords);    # don't forget the very last line
 
     return @out;
 }
@@ -117,13 +163,14 @@ sub flush_msg
     for (my $i=0; $i<$self->{changes}; $i++)
     {
         foreach my $line (
-          indent(
-            join(", ", sort keys %{$self->{files}->[$i]}) # all affected files
-            . ": $self->{msg}->[$i]",
-            80,		# line width
-            "    * ",	# prefix for first line
-            "      "	# indent for all following lines
-          ))
+            indent(
+                join(", ", sort keys %{$self->{files}->[$i]})    # all affected files
+                  . ": $self->{msg}->[$i]",
+                80,                                              # line width
+                "    * ",                                        # prefix for first line
+                "      "                                         # indent for all following lines
+            )
+          )
         {
             print "$line\n";
         }
@@ -151,18 +198,12 @@ sub start
         $self->{changes} = 0;
 
         # read email adress db.
-        # by GNU conventions only one space between the name parts
-        # exactly two spaces between the name and the email adress.
-        # login names are converted to lower case first for the hash key.
-        $self->{fullname}->{lc('tenbaht')} = 
-          'Michael Mayer (tenbaht)  <michael-mayer@gmx.de>';
-        $self->{fullname}->{lc('mmayer')}  =
-          'Michael Mayer (mmayer)  <michael-mayer@gmx.de>';
+        read_config($self);
     }
     if ($tagname eq 'logentry')
     {
         # init the message string to avoid undef warnings
-        $self->{msg}->[$self->{changes}] = "";
+        $self->{msg}->[ $self->{changes} ] = "";
     }
 }
 
@@ -175,7 +216,7 @@ sub end
 
     if ($tagname eq 'logentry')
     {
-        $self->{changes}++;	# one more change set to print
+        $self->{changes}++;    # one more change set to print
     }
     elsif ($tagname eq 'log')
     {
@@ -184,8 +225,8 @@ sub end
     }
 }
 
-
-sub text {
+sub text
+{
     my ($self, $origtext) = @_;
 
     $origtext =~ s/^\s*//;
@@ -204,26 +245,28 @@ sub text {
 
         # do not combine changes done at different dates
         flush_msg($self) if ($self->{date} ne $1);
-        $self->{date}     = $1;
+        $self->{date} = $1;
     }
     elsif ($self->{inside}->{msg})
     {
         $origtext =~ s/^\[[^\]]*\]\s//;
-        $self->{msg}->[$self->{changes}] .= decode_entities($origtext);
+        $self->{msg}->[ $self->{changes} ] .= decode_entities($origtext);
     }
     elsif ($self->{inside}->{path})
     {
         $origtext =~ m|(.*)/([^/]+)$|;
         # use only the filename, ignore the path.
         # mark the file as used.
-        $self->{files}->[$self->{changes}]->{"$2"}++;
+        $self->{files}->[ $self->{changes} ]->{"$2"}++
+          if (!defined($self->{ignore}->{lc($2)}));
     }
 }
 
 
 my $p = new HTMLStrip;
 # parse line-by-line, rather than the whole file at once
-while (<>) {
+while (<>)
+{
     $p->parse($_);
 }
 # flush and parse remaining unparsed HTML
