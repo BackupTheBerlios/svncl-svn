@@ -2,8 +2,9 @@ v0.4.0
     * add support for config file
     * allow for ignoring log entries for some files, useful for generated
       files.
+    * renamed to svncl.pl
 
-v0.3.3
+v0.3.3, 20.06.2010
     * first public release on svncl.berlios.de
     * minor code cleanup
 

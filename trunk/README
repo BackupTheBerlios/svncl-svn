@@ -2,7 +2,7 @@
 
 ===generate a GNU compilant ChangeLog file from the svn log messages===
 
-Usage: svn log -v --xml | snvcl.pl > ChangeLog
+Usage: svn log -v --xml | svncl.pl > ChangeLog
 
 There are already some other scripts doing the very same job. So why just
 writing another script for this?
@@ -40,14 +40,14 @@ Just give a verbose svn logfile in xml as input on stdin or as a file name
 argument and you will get a nicely sorted ChangeLog:
 
 <terminal>
-$> svn log -v --xml | snvcl.pl > ChangeLog
+$> svn log -v --xml | svncl.pl > ChangeLog
 </terminal>
 
 Or if prefer to separate the two steps:
 
 <terminal>
 $> svn log -v --xml > log.xml
-$> snvcl.pl log.xml > ChangeLog
+$> svncl.pl log.xml > ChangeLog
 </terminal>
 
 
@@ -103,9 +103,9 @@ results in a ChangeLog entry like this:
 
 ====Configuration====
 
-If you like to use the adress translation you have to enter the full names
-and email adresses first. Currently this translation table is hardwired in
-the sources. Maybe a litte bit too simple, I know. But it works. Reliable.
+If you like to use the address translation you have to enter the full names
+and email addresses first. Currently this translation table is hardwired in
+the sources. Maybe a little bit too simple, I know. But it works. Reliable.
 
 Just edit svncl.pl in function 'start' at line 156 and add all the names you
 want to be replaced. Using a config file would be easy as well, but I am
