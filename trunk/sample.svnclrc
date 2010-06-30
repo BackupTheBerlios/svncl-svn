@@ -1,0 +1,23 @@
+# Configfile for svncl.pl
+#
+# searched for at these locations:
+# /etc/svncl, ~/.subversion/svncl, ~/.svnclrc
+
+# Format of this file:
+
+# Lines starting with '#' and empty lines are ignored.
+
+# all other lines are expected to start with one of these keywords:
+
+# realname <svnname>=<Real Name  <mail@adress>>
+#   by GNU conventions only one space between the name parts
+#   exactly two spaces between the name and the email adress.
+#   login names are converted to lower case first for the hash key.
+
+# ignore <filename>
+#   ignores log entries for the given file name (case insensitive). Useful
+#   for generated files. Don't flood your changelog with entries about the
+#   changes in the changelog.
+
+realname mmayer = Michael Mayer  <michael-mayer@gmx.de>
+ignore	 changelog

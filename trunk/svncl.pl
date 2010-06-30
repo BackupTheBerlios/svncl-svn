@@ -49,16 +49,29 @@ use base "HTML::Parser";
 use HTML::Entities;
 
 
-# format of the configfile ~/.subversion/svncl
+# Reads a configfile (if any). Tries to open these locations:
+# /etc/svncl, ~/.subversion/svncl, ~/.svnclrc
+#
+# Format of the configfile:
+#
+# Lines starting with '#' and empty lines are ignored.
 #
 # realname <svnname>=<Real Name  <mail@adress>>
 #   by GNU conventions only one space between the name parts
 #   exactly two spaces between the name and the email adress.
 #   login names are converted to lower case first for the hash key.
+#
 # ignore <filename>
 #   ignores log entries for the given file name (case insensitive). Useful
 #   for generated files. Don't flood your changelog with entries about the
 #   changes in the changelog.
+#
+# example of a useful minimum config file:
+#
+# realname mmayer=Michael Mayer  <michael-mayer@gmx.de>
+# ignore changelog
+#
+
 sub read_config
 {
     my ($self) = @_;
@@ -67,7 +80,7 @@ sub read_config
     my $svnname;
     my $fullname;
 
-    foreach my $configfile ("/etc/svncl", glob("~/.subversion/svncl"), glob("~/.svncl"))
+    foreach my $configfile ("/etc/svncl", glob("~/.subversion/svncl"), glob("~/.svnclrc"))
     {
         next if (! -r $configfile);
         open(my $fh, "<", $configfile);

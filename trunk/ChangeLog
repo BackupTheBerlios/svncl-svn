@@ -1,3 +1,8 @@
+v0.4.0
+    * add support for config file
+    * allow for ignoring log entries for some files, useful for generated
+      files.
+
 v0.3.3
     * first public release on svncl.berlios.de
     * minor code cleanup
